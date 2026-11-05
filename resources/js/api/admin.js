@@ -139,3 +139,20 @@ export async function finalizarSesionAdmin(id) {
     const { data } = await http.post(`/admin/sesiones/${id}/finalizar`, {}, authConfig());
     return data.data;
 }
+
+// --- Interruptor del simulador ---
+
+export async function obtenerEstadoSimulador() {
+    const { data } = await http.get('/admin/simulador', authConfig());
+    return data;
+}
+
+export async function abrirSimulador(horas) {
+    const { data } = await http.post('/admin/simulador/abrir', { horas }, authConfig());
+    return data;
+}
+
+export async function cerrarSimulador() {
+    const { data } = await http.post('/admin/simulador/cerrar', {}, authConfig());
+    return data;
+}

@@ -93,7 +93,8 @@ class PromptYGeminiTest extends TestCase
         Http::assertSent(function ($request) {
             return $request->hasHeader('x-goog-api-key', 'test-api-key-secreta')
                 && data_get($request->data(), 'system_instruction.parts.0.text') === 'Instrucción del sistema'
-                && data_get($request->data(), 'contents.0.parts.0.text') === '¿Cuántos médicos hay?';
+                && data_get($request->data(), 'contents.0.parts.0.text') === '¿Cuántos médicos hay?'
+                && data_get($request->data(), 'generationConfig.thinkingConfig.thinkingBudget') === 0;
         });
     }
 

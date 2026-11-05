@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\VerificarSimuladorAbierto;
 use App\Http\Middleware\VerificarTokenSesion;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'sesion.token' => VerificarTokenSesion::class,
+            'simulador.abierto' => VerificarSimuladorAbierto::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

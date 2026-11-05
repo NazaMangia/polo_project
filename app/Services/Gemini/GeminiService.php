@@ -27,7 +27,7 @@ class GeminiService implements ProveedorIA
             );
         }
 
-        $modelo = (string) config('gemini.model', 'gemini-2.5-flash');
+        $modelo = (string) config('gemini.model', 'gemini-2.5-flash-lite');
         $baseUrl = rtrim((string) config('gemini.base_url'), '/');
         $endpoint = "{$baseUrl}/models/{$modelo}:generateContent";
 
@@ -43,6 +43,11 @@ class GeminiService implements ProveedorIA
                 'maxOutputTokens' => (int) config('gemini.max_output_tokens', 600),
             ],
         ];
+
+        $thinkingBudget = config('gemini.thinking_budget');
+        if ($thinkingBudget !== null) {
+            $payload['generationConfig']['thinkingConfig'] = ['thinkingBudget' => (int) $thinkingBudget];
+        }
 
         $inicio = hrtime(true);
 

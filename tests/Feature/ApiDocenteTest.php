@@ -34,6 +34,25 @@ class ApiDocenteTest extends TestCase
         $this->getJson('/api/admin/equipos')->assertUnauthorized();
         $this->getJson('/api/admin/escenarios')->assertUnauthorized();
         $this->getJson('/api/admin/sesiones')->assertUnauthorized();
+        $this->postJson('/api/admin/simulador/abrir')->assertUnauthorized();
+    }
+
+    public function test_el_docente_abre_y_cierra_el_simulador(): void
+    {
+        $this->actingAs($this->docente, 'sanctum');
+
+        $this->getJson('/api/admin/simulador')->assertOk()->assertJsonPath('abierto', false);
+
+        $abrir = $this->postJson('/api/admin/simulador/abrir', ['horas' => 2]);
+        $abrir->assertOk()->assertJsonPath('abierto', true);
+        $this->assertNotNull($abrir->json('abierto_hasta'));
+
+        $this->postJson('/api/admin/simulador/abrir', ['horas' => 50])->assertUnprocessable();
+
+        $this->postJson('/api/admin/simulador/cerrar')
+            ->assertOk()
+            ->assertJsonPath('abierto', false)
+            ->assertJsonPath('abierto_hasta', null);
     }
 
     public function test_login_docente_devuelve_token_y_permite_acceder_al_panel(): void

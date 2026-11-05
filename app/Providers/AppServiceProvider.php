@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Contracts\ProveedorIA;
+use App\Models\Sesion;
 use App\Services\Gemini\FakeProveedorIA;
 use App\Services\Gemini\GeminiService;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -45,9 +46,12 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('mensajes-ia', function (Request $request) {
-            $sesionUuid = (string) optional($request->route('sesion'))->uuid ?: $request->ip();
+            // El throttle corre antes del route model binding: el parámetro todavía es el uuid (string).
+            // Se limita por sesión y no por IP, porque todo un aula suele salir a internet con la misma IP.
+            $sesion = $request->route('sesion');
+            $clave = $sesion instanceof Sesion ? $sesion->uuid : (string) $sesion;
 
-            return Limit::perMinute(10)->by($sesionUuid)->response(function () {
+            return Limit::perMinute(10)->by($clave !== '' ? 'sesion:'.$clave : $request->ip())->response(function () {
                 return response()->json([
                     'message' => 'Estás enviando mensajes demasiado rápido. Esperá unos segundos antes de hacer otra pregunta.',
                 ], 429);

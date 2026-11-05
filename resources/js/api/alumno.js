@@ -53,3 +53,8 @@ export async function finalizarEntrevista(uuid) {
     );
     return data.data;
 }
+
+export async function obtenerEstadoSimulador() {
+    const { data } = await http.get('/estado');
+    return data.simulador;
+}

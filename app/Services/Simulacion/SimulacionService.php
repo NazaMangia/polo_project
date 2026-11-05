@@ -110,7 +110,9 @@ class SimulacionService
      */
     public function enviarMensajeAlumno(Sesion $sesion, string $contenido): array
     {
-        $lock = Cache::lock("sesion-mensaje:{$sesion->id}", 35);
+        // El lock tiene que durar lo que puede tardar la llamada a la IA: 2 intentos con su timeout, más margen.
+        $segundosLock = (int) config('gemini.timeout', 30) * 2 + 5;
+        $lock = Cache::lock("sesion-mensaje:{$sesion->id}", $segundosLock);
 
         if (! $lock->get()) {
             throw new HttpException(429, 'El cliente todavía está respondiendo tu mensaje anterior. Esperá unos segundos.');

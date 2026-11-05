@@ -1,13 +1,24 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { iniciarSesionPorCodigo } from '@/api/alumno';
+import { iniciarSesionPorCodigo, obtenerEstadoSimulador } from '@/api/alumno';
 
 const router = useRouter();
 
 const codigo = ref('');
 const cargando = ref(false);
 const errorMensaje = ref('');
+
+// null mientras se consulta; si la consulta falla se deja intentar igual (el servidor valida).
+const simuladorAbierto = ref(null);
+
+onMounted(async () => {
+    try {
+        simuladorAbierto.value = (await obtenerEstadoSimulador())?.abierto ?? null;
+    } catch {
+        simuladorAbierto.value = null;
+    }
+});
 
 async function comenzar() {
     errorMensaje.value = '';
@@ -30,7 +41,9 @@ async function comenzar() {
         const status = error.response?.status;
         const errores = error.response?.data?.errors;
 
-        if (status === 422 && errores?.codigo?.length) {
+        if (status === 423) {
+            simuladorAbierto.value = false;
+        } else if (status === 422 && errores?.codigo?.length) {
             errorMensaje.value = errores.codigo[0];
         } else if (error.response?.data?.message) {
             errorMensaje.value = error.response.data.message;
@@ -127,7 +140,16 @@ async function comenzar() {
                             Escribí el código de tu equipo. Si ya tenían una entrevista en curso, se retomará automáticamente.
                         </p>
 
-                        <form class="mt-5 space-y-4" @submit.prevent="comenzar">
+                        <div
+                            v-if="simuladorAbierto === false"
+                            role="status"
+                            class="mt-5 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-sm text-amber-800"
+                        >
+                            <strong>El simulador está cerrado en este momento.</strong>
+                            El docente lo habilita durante la clase.
+                        </div>
+
+                        <form v-else class="mt-5 space-y-4" @submit.prevent="comenzar">
                             <div>
                                 <label for="codigo-equipo" class="block text-xs font-semibold tracking-wide text-slate-700 uppercase">
                                     Código del equipo

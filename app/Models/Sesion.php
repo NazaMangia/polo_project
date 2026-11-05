@@ -9,7 +9,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Str;
 
 class Sesion extends Model
 {
@@ -64,12 +63,17 @@ class Sesion extends Model
     // ---------------------------------------------------------------------
 
     /**
-     * Genera un token nuevo, guarda solo su hash y devuelve el token en texto plano
-     * (que se entrega una única vez al navegador del equipo).
+     * Devuelve el token de acceso de la sesión y guarda solo su hash.
+     *
+     * El token se deriva del uuid firmado con la APP_KEY (HMAC): es siempre el mismo para
+     * la misma sesión, así cada integrante que entra con el código del equipo recibe un token
+     * válido sin invalidar el de sus compañeros. Sin la APP_KEY no se puede calcular.
      */
     public function generarToken(): string
     {
-        $token = Str::random(64);
+        $this->uuid ??= $this->newUniqueId();
+
+        $token = hash_hmac('sha256', 'sesion-alumno:'.$this->uuid, (string) config('app.key'));
         $this->token_hash = hash('sha256', $token);
 
         return $token;
