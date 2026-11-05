@@ -15,9 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Habilita autenticación por sesión/cookies de Sanctum para el panel docente en el mismo dominio.
-        $middleware->statefulApi();
-
+        // La API es stateless: el docente se autentica con su token de Sanctum (Bearer) y los equipos
+        // con X-Sesion-Token. No se usa statefulApi(): agregaría sesión y CSRF a /api, y una pestaña
+        // abierta más de SESSION_LIFETIME minutos fallaría con "CSRF token mismatch" (419).
         $middleware->alias([
             'sesion.token' => VerificarTokenSesion::class,
             'simulador.abierto' => VerificarSimuladorAbierto::class,
