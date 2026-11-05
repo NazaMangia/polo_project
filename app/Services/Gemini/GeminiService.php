@@ -27,7 +27,7 @@ class GeminiService implements ProveedorIA
             );
         }
 
-        $modelo = (string) config('gemini.model', 'gemini-2.5-flash-lite');
+        $modelo = (string) config('gemini.model', 'gemini-3.1-flash-lite');
         $baseUrl = rtrim((string) config('gemini.base_url'), '/');
         $endpoint = "{$baseUrl}/models/{$modelo}:generateContent";
 

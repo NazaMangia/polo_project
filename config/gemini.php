@@ -12,7 +12,7 @@ return [
 
     'api_key' => env('GEMINI_API_KEY', ''),
 
-    'model' => env('GEMINI_MODEL', 'gemini-2.5-flash-lite'),
+    'model' => env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
 
     'base_url' => env('GEMINI_BASE_URL', 'https://generativelanguage.googleapis.com/v1beta'),
 
@@ -22,7 +22,7 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Presupuesto de "razonamiento" (thinking) de los modelos 2.5
+    | Presupuesto de "razonamiento" (thinking) del modelo
     |--------------------------------------------------------------------------
     | Los tokens de razonamiento se cobran como salida y descuentan del límite
     | max_output_tokens (pueden dejar respuestas cortadas o vacías). Para hacer
