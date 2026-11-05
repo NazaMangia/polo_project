@@ -183,4 +183,40 @@ class SimulacionService
 
         return $sesion->refresh();
     }
+
+    /**
+     * Reabre una entrevista finalizada para que el equipo la retome con todo su historial
+     * (al volver a ingresar con el código se reanuda esta misma sesión).
+     */
+    public function reabrirSesion(Sesion $sesion): Sesion
+    {
+        if ($sesion->estaActiva()) {
+            return $sesion;
+        }
+
+        // Al ingresar se retoma la sesión activa del equipo para su escenario: no puede haber dos.
+        $hayOtraActiva = Sesion::where('equipo_id', $sesion->equipo_id)
+            ->where('escenario_id', $sesion->escenario_id)
+            ->where('estado', EstadoSesion::Activa)
+            ->whereKeyNot($sesion->id)
+            ->exists();
+
+        if ($hayOtraActiva) {
+            throw new HttpException(409, 'El equipo ya tiene otra entrevista activa para este escenario. Finalizala antes de reabrir esta.');
+        }
+
+        DB::transaction(function () use ($sesion) {
+            $sesion->forceFill([
+                'estado' => EstadoSesion::Activa,
+                'fin' => null,
+            ])->save();
+
+            $sesion->mensajes()->create([
+                'rol' => RolMensaje::Sistema,
+                'contenido' => 'Entrevista reabierta por el docente.',
+            ]);
+        });
+
+        return $sesion->refresh();
+    }
 }

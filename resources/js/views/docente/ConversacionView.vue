@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { finalizarSesionAdmin, obtenerSesionAdmin } from '@/api/admin';
+import { finalizarSesionAdmin, obtenerSesionAdmin, reabrirSesionAdmin } from '@/api/admin';
 
 const route = useRoute();
 const sesionId = computed(() => Number(route.params.id));
@@ -57,6 +57,21 @@ async function cerrarSesion() {
     }
 }
 
+async function reabrirSesion() {
+    if (!confirm('¿Reabrir esta entrevista? El equipo podrá seguir la conversación al volver a ingresar con su código.')) {
+        return;
+    }
+    finalizando.value = true;
+    errorMensaje.value = '';
+    try {
+        sesion.value = await reabrirSesionAdmin(sesionId.value);
+    } catch (error) {
+        errorMensaje.value = error.response?.data?.message || 'No se pudo reabrir la sesión.';
+    } finally {
+        finalizando.value = false;
+    }
+}
+
 onMounted(cargar);
 </script>
 
@@ -88,6 +103,15 @@ onMounted(cargar);
                     @click="cerrarSesion"
                 >
                     {{ finalizando ? 'Finalizando…' : 'Finalizar sesión' }}
+                </button>
+                <button
+                    v-else-if="sesion"
+                    type="button"
+                    :disabled="finalizando"
+                    class="cursor-pointer rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-semibold text-white hover:bg-emerald-700 disabled:opacity-60"
+                    @click="reabrirSesion"
+                >
+                    {{ finalizando ? 'Reabriendo…' : 'Reabrir sesión' }}
                 </button>
             </div>
         </div>

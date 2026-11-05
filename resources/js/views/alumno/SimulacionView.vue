@@ -1,7 +1,7 @@
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { enviarMensaje, finalizarEntrevista, obtenerSesion } from '@/api/alumno';
+import { enviarMensaje, obtenerSesion } from '@/api/alumno';
 
 const route = useRoute();
 const router = useRouter();
@@ -13,8 +13,6 @@ const pregunta = ref('');
 
 const cargandoSesion = ref(true);
 const enviando = ref(false);
-const finalizando = ref(false);
-const confirmarCierre = ref(false);
 
 const errorCarga = ref('');
 const errorEnvio = ref('');
@@ -135,24 +133,6 @@ function manejarTecla(evento) {
     }
 }
 
-async function confirmarFinalizacion() {
-    if (finalizando.value) return;
-    finalizando.value = true;
-    errorEnvio.value = '';
-
-    try {
-        const datos = await finalizarEntrevista(uuid.value);
-        sesion.value = datos;
-        mensajes.value = datos.mensajes || mensajes.value;
-        confirmarCierre.value = false;
-        irAlFinal(true);
-    } catch (error) {
-        errorEnvio.value = error.response?.data?.message || 'No se pudo finalizar la entrevista.';
-    } finally {
-        finalizando.value = false;
-    }
-}
-
 onMounted(cargar);
 </script>
 
@@ -210,14 +190,6 @@ onMounted(cargar);
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <button
-                            v-if="estaActiva"
-                            type="button"
-                            class="cursor-pointer rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
-                            @click="confirmarCierre = true"
-                        >
-                            Finalizar entrevista
-                        </button>
                         <RouterLink
                             to="/"
                             class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:bg-slate-50"
@@ -335,8 +307,8 @@ onMounted(cargar);
                         class="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-100 px-4 py-3 text-sm text-slate-700"
                     >
                         <span>
-                            Esta entrevista fue finalizada. Podés revisar toda la conversación arriba para armar tu
-                            informe de relevamiento.
+                            Esta entrevista fue finalizada por el docente. Podés revisar toda la conversación arriba
+                            para armar tu informe de relevamiento. Si necesitan seguirla, pídanle que la reabra.
                         </span>
                         <RouterLink
                             to="/"
@@ -347,38 +319,6 @@ onMounted(cargar);
                     </div>
                 </div>
             </footer>
-
-            <!-- Modal de confirmación para finalizar la entrevista -->
-            <div
-                v-if="confirmarCierre"
-                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-xs"
-            >
-                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl ring-1 ring-slate-200">
-                    <h2 class="text-base font-bold text-slate-900">¿Finalizar la entrevista?</h2>
-                    <p class="mt-2 text-sm text-slate-600">
-                        Una vez finalizada, no podrán enviar más preguntas en esta sesión. La conversación quedará
-                        guardada para que puedan revisarla junto con el docente.
-                    </p>
-                    <div class="mt-5 flex justify-end gap-2.5">
-                        <button
-                            type="button"
-                            :disabled="finalizando"
-                            class="cursor-pointer rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                            @click="confirmarCierre = false"
-                        >
-                            Seguir entrevistando
-                        </button>
-                        <button
-                            type="button"
-                            :disabled="finalizando"
-                            class="cursor-pointer rounded-xl bg-rose-600 px-4 py-2 text-xs font-semibold text-white hover:bg-rose-700 disabled:opacity-60"
-                            @click="confirmarFinalizacion"
-                        >
-                            {{ finalizando ? 'Finalizando…' : 'Sí, finalizar entrevista' }}
-                        </button>
-                    </div>
-                </div>
-            </div>
         </template>
     </div>
 </template>

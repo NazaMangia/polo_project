@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Enums\EstadoSesion;
 use App\Enums\RolMensaje;
 use App\Models\Equipo;
 use App\Models\Sesion;
 use App\Services\Simulacion\EstadoSimulador;
+use App\Services\Simulacion\SimulacionService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -144,10 +144,11 @@ class ApiAlumnoTest extends TestCase
 
         $this->assertStringContainsString('cinco médicos', $envio->json('mensaje_cliente.contenido'));
 
-        // Finalizar la entrevista
-        $fin = $this->postJson("/api/sesiones/{$uuid}/finalizar", [], $headers);
-        $fin->assertOk()
-            ->assertJsonPath('data.estado', EstadoSesion::Finalizada->value);
+        // El equipo no puede finalizar su propia entrevista.
+        $this->postJson("/api/sesiones/{$uuid}/finalizar", [], $headers)->assertNotFound();
+
+        // Solo el docente la finaliza.
+        app(SimulacionService::class)->finalizarSesion(Sesion::where('uuid', $uuid)->firstOrFail());
 
         // Intentar enviar otro mensaje en sesión finalizada -> 409 Conflict
         $this->postJson("/api/sesiones/{$uuid}/mensajes", [

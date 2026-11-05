@@ -25,7 +25,9 @@ Route::get('/estado', fn () => response()->json([
 
 // --- Flujo del Alumno ---
 // Ingresar y preguntarle a la IA solo funciona mientras el docente tenga el simulador abierto.
-// Ver la conversación ya existente y finalizarla se permite siempre.
+// Ver la conversación ya existente se permite siempre.
+// Los equipos no pueden finalizar su entrevista: queda activa y la retoman al volver a ingresar
+// con el código (solo el docente la finaliza o la reabre desde el panel).
 Route::post('/sesiones', [SesionController::class, 'store'])
     ->middleware(['simulador.abierto', 'throttle:iniciar-sesion']);
 
@@ -34,7 +36,6 @@ Route::middleware('sesion.token')->group(function () {
     Route::get('/sesiones/{sesion}/mensajes', [MensajeController::class, 'index']);
     Route::post('/sesiones/{sesion}/mensajes', [MensajeController::class, 'store'])
         ->middleware(['simulador.abierto', 'throttle:mensajes-ia']);
-    Route::post('/sesiones/{sesion}/finalizar', [SesionController::class, 'finalizar']);
 });
 
 // --- Autenticación del Docente ---
@@ -65,5 +66,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('sesiones', [AdminSesionController::class, 'index']);
         Route::get('sesiones/{id}', [AdminSesionController::class, 'show'])->whereNumber('id');
         Route::post('sesiones/{id}/finalizar', [AdminSesionController::class, 'finalizar'])->whereNumber('id');
+        Route::post('sesiones/{id}/reabrir', [AdminSesionController::class, 'reabrir'])->whereNumber('id');
     });
 });

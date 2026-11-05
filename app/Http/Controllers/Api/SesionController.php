@@ -41,15 +41,4 @@ class SesionController extends Controller
 
         return new SesionAlumnoResource($sesion);
     }
-
-    /**
-     * POST /api/sesiones/{sesion}/finalizar
-     */
-    public function finalizar(Sesion $sesion): SesionAlumnoResource
-    {
-        $sesion = $this->simulacionService->finalizarSesion($sesion);
-        $sesion->load(['equipo', 'escenario', 'mensajes']);
-
-        return new SesionAlumnoResource($sesion);
-    }
 }

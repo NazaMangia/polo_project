@@ -45,14 +45,6 @@ export async function enviarMensaje(uuid, contenido) {
     return data;
 }
 
-export async function finalizarEntrevista(uuid) {
-    const { data } = await http.post(
-        `/sesiones/${uuid}/finalizar`,
-        {},
-        { headers: headersSesion(uuid) },
-    );
-    return data.data;
-}
 
 export async function obtenerEstadoSimulador() {
     const { data } = await http.get('/estado');

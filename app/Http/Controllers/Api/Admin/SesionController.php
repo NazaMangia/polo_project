@@ -66,4 +66,17 @@ class SesionController extends Controller
 
         return new SesionAdminResource($sesion);
     }
+
+    /**
+     * POST /api/admin/sesiones/{id}/reabrir
+     * Vuelve a habilitar una entrevista finalizada para que el equipo la continúe.
+     */
+    public function reabrir(int $id): SesionAdminResource
+    {
+        $sesion = Sesion::findOrFail($id);
+        $sesion = $this->simulacionService->reabrirSesion($sesion);
+        $sesion->load(['equipo', 'escenario', 'mensajes'])->loadCount('mensajes');
+
+        return new SesionAdminResource($sesion);
+    }
 }

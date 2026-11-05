@@ -178,5 +178,21 @@ class ApiDocenteTest extends TestCase
         $cerrar = $this->actingAs($this->docente)->postJson("/api/admin/sesiones/{$sesion->id}/finalizar");
         $cerrar->assertOk()
             ->assertJsonPath('data.estado', EstadoSesion::Finalizada->value);
+
+        // Reabrir: vuelve a quedar activa, conserva la conversación y agrega un aviso del sistema.
+        $reabrir = $this->actingAs($this->docente)->postJson("/api/admin/sesiones/{$sesion->id}/reabrir");
+        $reabrir->assertOk()
+            ->assertJsonPath('data.estado', EstadoSesion::Activa->value)
+            ->assertJsonPath('data.fin', null)
+            ->assertJsonPath('data.mensajes.3.contenido', 'Entrevista reabierta por el docente.');
+
+        // No se puede reabrir si el equipo ya tiene otra entrevista activa para el mismo escenario.
+        $this->actingAs($this->docente)->postJson("/api/admin/sesiones/{$sesion->id}/finalizar")->assertOk();
+        Sesion::factory()->create([
+            'equipo_id' => $equipo->id,
+            'escenario_id' => $equipo->escenario_id,
+            'escenario_snapshot' => $equipo->escenario->aSnapshot(),
+        ]);
+        $this->actingAs($this->docente)->postJson("/api/admin/sesiones/{$sesion->id}/reabrir")->assertStatus(409);
     }
 }

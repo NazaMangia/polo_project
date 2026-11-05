@@ -140,6 +140,11 @@ export async function finalizarSesionAdmin(id) {
     return data.data;
 }
 
+export async function reabrirSesionAdmin(id) {
+    const { data } = await http.post(`/admin/sesiones/${id}/reabrir`, {}, authConfig());
+    return data.data;
+}
+
 // --- Interruptor del simulador ---
 
 export async function obtenerEstadoSimulador() {
